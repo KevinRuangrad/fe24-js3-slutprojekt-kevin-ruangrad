@@ -1,7 +1,6 @@
 import { Country, CountryResponse } from "./types";
 
 const BASE_URL = "https://restcountries.com/v3.1";
-const COUNTRIES_PER_PAGE = 10;
 
 // Cache for all countries to avoid multiple API calls
 let allCountriesCache: Country[] | null = null;
@@ -31,68 +30,87 @@ export async function fetchAllCountries(): Promise<Country[]> {
     }
 }
 
-export async function fetchCountriesPaginated(
-    page: number = 1
+export async function fetchCountriesWithFilters(
+    page: number = 1,
+    pageSize: number = 10,
+    query: string = "",
+    region: string = ""
 ): Promise<CountryResponse> {
     try {
         const allCountries = await fetchAllCountries();
-        const startIndex = (page - 1) * COUNTRIES_PER_PAGE;
-        const endIndex = startIndex + COUNTRIES_PER_PAGE;
 
-        const paginatedCountries = allCountries.slice(startIndex, endIndex);
-        const totalPages = Math.ceil(allCountries.length / COUNTRIES_PER_PAGE);
+        let filteredCountries = allCountries;
+
+        // Filter by region if specified
+        if (region && region !== "all") {
+            filteredCountries = filteredCountries.filter(
+                (country) =>
+                    country.region.toLowerCase() === region.toLowerCase()
+            );
+        }
+
+        // Filter by search query if specified
+        if (query.trim()) {
+            filteredCountries = filteredCountries.filter(
+                (country) =>
+                    country.name.common
+                        .toLowerCase()
+                        .includes(query.toLowerCase()) ||
+                    country.region
+                        .toLowerCase()
+                        .includes(query.toLowerCase()) ||
+                    (country.capital &&
+                        country.capital.some((cap) =>
+                            cap.toLowerCase().includes(query.toLowerCase())
+                        ))
+            );
+        }
+
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedCountries = filteredCountries.slice(
+            startIndex,
+            endIndex
+        );
+        const totalPages = Math.ceil(filteredCountries.length / pageSize);
 
         return {
             countries: paginatedCountries,
-            total: allCountries.length,
+            total: filteredCountries.length,
             page,
-            limit: COUNTRIES_PER_PAGE,
+            limit: pageSize,
             totalPages,
         };
     } catch (error) {
-        console.error("Error fetching paginated countries:", error);
+        console.error("Error fetching countries with filters:", error);
         throw error;
     }
+}
+
+// Get unique regions for filter dropdown
+export async function getUniqueRegions(): Promise<string[]> {
+    try {
+        const allCountries = await fetchAllCountries();
+        const regions = [
+            ...new Set(allCountries.map((country) => country.region)),
+        ];
+        return regions.sort();
+    } catch (error) {
+        console.error("Error fetching regions:", error);
+        throw error;
+    }
+}
+
+// Legacy functions for backward compatibility
+export async function fetchCountriesPaginated(
+    page: number = 1
+): Promise<CountryResponse> {
+    return fetchCountriesWithFilters(page, 10, "", "");
 }
 
 export async function searchCountries(
     query: string,
     page: number = 1
 ): Promise<CountryResponse> {
-    try {
-        const allCountries = await fetchAllCountries();
-
-        const filteredCountries = allCountries.filter(
-            (country) =>
-                country.name.common
-                    .toLowerCase()
-                    .includes(query.toLowerCase()) ||
-                country.region.toLowerCase().includes(query.toLowerCase()) ||
-                (country.capital &&
-                    country.capital.some((cap) =>
-                        cap.toLowerCase().includes(query.toLowerCase())
-                    ))
-        );
-
-        const startIndex = (page - 1) * COUNTRIES_PER_PAGE;
-        const endIndex = startIndex + COUNTRIES_PER_PAGE;
-        const paginatedCountries = filteredCountries.slice(
-            startIndex,
-            endIndex
-        );
-        const totalPages = Math.ceil(
-            filteredCountries.length / COUNTRIES_PER_PAGE
-        );
-
-        return {
-            countries: paginatedCountries,
-            total: filteredCountries.length,
-            page,
-            limit: COUNTRIES_PER_PAGE,
-            totalPages,
-        };
-    } catch (error) {
-        console.error("Error searching countries:", error);
-        throw error;
-    }
+    return fetchCountriesWithFilters(page, 10, query, "");
 }

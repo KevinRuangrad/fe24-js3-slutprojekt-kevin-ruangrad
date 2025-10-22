@@ -1,8 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     Pagination,
     PaginationContent,
@@ -12,21 +20,76 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { CountryCard } from "@/components/country-card";
-import { fetchCountriesPaginated, searchCountries } from "@/lib/api";
+import { fetchCountriesWithFilters, getUniqueRegions } from "@/lib/api";
 import { CountryResponse } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
 export function CountriesList() {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Get URL parameters
+    const currentPage = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "24");
+    const query = searchParams.get("query") || "";
+    const region = searchParams.get("region") || "";
+
+    const [searchQuery, setSearchQuery] = useState(query);
+    const [selectedRegion, setSelectedRegion] = useState(region);
+    const [debouncedSearch, setDebouncedSearch] = useState(query);
     const [data, setData] = useState<CountryResponse | null>(null);
+    const [regions, setRegions] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     // Debounce search query
     const [debounceTimeout, setDebounceTimeout] =
         useState<NodeJS.Timeout | null>(null);
+
+    // Update URL parameters
+    const updateURL = (newParams: {
+        page?: number;
+        pageSize?: number;
+        query?: string;
+        region?: string;
+    }) => {
+        const params = new URLSearchParams(searchParams);
+
+        if (newParams.page !== undefined) {
+            if (newParams.page === 1) {
+                params.delete("page");
+            } else {
+                params.set("page", newParams.page.toString());
+            }
+        }
+
+        if (newParams.pageSize !== undefined) {
+            if (newParams.pageSize === 24) {
+                params.delete("pageSize");
+            } else {
+                params.set("pageSize", newParams.pageSize.toString());
+            }
+        }
+
+        if (newParams.query !== undefined) {
+            if (newParams.query === "") {
+                params.delete("query");
+            } else {
+                params.set("query", newParams.query);
+            }
+        }
+
+        if (newParams.region !== undefined) {
+            if (newParams.region === "" || newParams.region === "all") {
+                params.delete("region");
+            } else {
+                params.set("region", newParams.region);
+            }
+        }
+
+        const newURL = params.toString() ? `?${params.toString()}` : "";
+        router.push(newURL);
+    };
 
     const handleSearchChange = (value: string) => {
         setSearchQuery(value);
@@ -37,28 +100,43 @@ export function CountriesList() {
 
         const timeout = setTimeout(() => {
             setDebouncedSearch(value);
-            setCurrentPage(1); // Reset to first page when searching
+            updateURL({ query: value, page: 1 });
         }, 300);
 
         setDebounceTimeout(timeout);
     };
 
-    // Fetch data when page or search changes
+    const handleRegionChange = (value: string) => {
+        setSelectedRegion(value);
+        updateURL({ region: value, page: 1 });
+    };
+
+    // Load regions on component mount
+    useEffect(() => {
+        const loadRegions = async () => {
+            try {
+                const uniqueRegions = await getUniqueRegions();
+                setRegions(uniqueRegions);
+            } catch (err) {
+                console.error("Failed to load regions:", err);
+            }
+        };
+        loadRegions();
+    }, []);
+
+    // Fetch data when URL parameters change
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             setError(null);
 
             try {
-                let result: CountryResponse;
-                if (debouncedSearch.trim()) {
-                    result = await searchCountries(
-                        debouncedSearch,
-                        currentPage
-                    );
-                } else {
-                    result = await fetchCountriesPaginated(currentPage);
-                }
+                const result = await fetchCountriesWithFilters(
+                    currentPage,
+                    pageSize,
+                    debouncedSearch,
+                    selectedRegion
+                );
                 setData(result);
             } catch (err) {
                 setError(
@@ -72,17 +150,25 @@ export function CountriesList() {
         };
 
         fetchData();
-    }, [currentPage, debouncedSearch]);
+    }, [currentPage, pageSize, debouncedSearch, selectedRegion]);
+
+    // Sync component state with URL parameters
+    useEffect(() => {
+        setSearchQuery(query);
+        setDebouncedSearch(query);
+        setSelectedRegion(region);
+    }, [query, region]);
 
     const handlePageChange = (page: number) => {
-        setCurrentPage(page);
+        updateURL({ page });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const clearSearch = () => {
+    const clearFilters = () => {
         setSearchQuery("");
+        setSelectedRegion("");
         setDebouncedSearch("");
-        setCurrentPage(1);
+        router.push("/");
     };
 
     if (error) {
@@ -110,16 +196,40 @@ export function CountriesList() {
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="flex-1"
                     />
-                    {(searchQuery || debouncedSearch) && (
-                        <Button variant="outline" onClick={clearSearch}>
+                    {(searchQuery || debouncedSearch || selectedRegion) && (
+                        <Button variant="outline" onClick={clearFilters}>
                             Rensa
                         </Button>
                     )}
                 </div>
 
-                {debouncedSearch && (
+                {/* Region Filter */}
+                <div className="flex justify-center">
+                    <Select
+                        value={selectedRegion || "all"}
+                        onValueChange={handleRegionChange}
+                    >
+                        <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="Välj region" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Alla regioner</SelectItem>
+                            {regions.map((regionName) => (
+                                <SelectItem key={regionName} value={regionName}>
+                                    {regionName}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {(debouncedSearch || selectedRegion) && (
                     <p className="text-center text-sm text-muted-foreground">
-                        Visar resultat för: &quot;{debouncedSearch}&quot;
+                        {debouncedSearch && selectedRegion
+                            ? `Visar resultat för: "${debouncedSearch}" i ${selectedRegion}`
+                            : debouncedSearch
+                            ? `Visar resultat för: "${debouncedSearch}"`
+                            : `Visar länder i: ${selectedRegion}`}
                     </p>
                 )}
             </div>
@@ -255,14 +365,14 @@ export function CountriesList() {
                     ) : (
                         <div className="text-center py-12">
                             <p className="text-muted-foreground">
-                                {debouncedSearch
+                                {debouncedSearch || selectedRegion
                                     ? "Inga länder hittades för din sökning."
                                     : "Inga länder att visa."}
                             </p>
-                            {debouncedSearch && (
+                            {(debouncedSearch || selectedRegion) && (
                                 <Button
                                     variant="outline"
-                                    onClick={clearSearch}
+                                    onClick={clearFilters}
                                     className="mt-4"
                                 >
                                     Visa alla länder
