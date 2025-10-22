@@ -38,7 +38,7 @@ export function CountryCard({ country }: CountryCardProps) {
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">
-                            Huvudstad:
+                            Capital:
                         </span>
                         <span className="text-sm font-medium text-right line-clamp-1">
                             {capital}

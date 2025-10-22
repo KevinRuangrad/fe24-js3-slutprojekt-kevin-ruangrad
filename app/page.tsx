@@ -6,11 +6,11 @@ export default function Home() {
             <header className="bg-background border-b">
                 <div className="container mx-auto px-4 py-6">
                     <h1 className="text-4xl md:text-6xl font-bold text-center text-foreground">
-                        Upptäck världen
+                        Explore the World
                     </h1>
                     <p className="text-center text-muted-foreground mt-2 text-lg">
-                        Upptäck världens länder med flaggor, regioner och
-                        huvudstäder
+                        Discover countries around the world with flags, regions
+                        and capitals
                     </p>
                 </div>
             </header>

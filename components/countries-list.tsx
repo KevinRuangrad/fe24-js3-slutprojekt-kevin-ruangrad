@@ -20,9 +20,11 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { CountryCard } from "@/components/country-card";
+import { CountryCardSkeleton } from "@/components/country-card-skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { fetchCountriesWithFilters, getUniqueRegions } from "@/lib/api";
 import { CountryResponse } from "@/lib/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 
 export function CountriesList() {
     const router = useRouter();
@@ -30,7 +32,7 @@ export function CountriesList() {
 
     // Get URL parameters
     const currentPage = parseInt(searchParams.get("page") || "1");
-    const pageSize = parseInt(searchParams.get("pageSize") || "24");
+    const pageSize = parseInt(searchParams.get("pageSize") || "20");
     const query = searchParams.get("query") || "";
     const region = searchParams.get("region") || "";
 
@@ -64,7 +66,7 @@ export function CountriesList() {
         }
 
         if (newParams.pageSize !== undefined) {
-            if (newParams.pageSize === 24) {
+            if (newParams.pageSize === 20) {
                 params.delete("pageSize");
             } else {
                 params.set("pageSize", newParams.pageSize.toString());
@@ -171,13 +173,46 @@ export function CountriesList() {
         router.push("/");
     };
 
+    const handleRetry = async () => {
+        setError(null);
+        setIsLoading(true);
+
+        try {
+            const result = await fetchCountriesWithFilters(
+                currentPage,
+                pageSize,
+                debouncedSearch,
+                selectedRegion
+            );
+            setData(result);
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : "Failed to fetch countries"
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <p className="text-destructive">
-                    Error loading countries: {error}
-                </p>
-                <Button onClick={() => window.location.reload()}>Retry</Button>
+            <div className="container mx-auto px-4 py-8">
+                <Alert variant="destructive" className="max-w-md mx-auto">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Något gick fel</AlertTitle>
+                    <AlertDescription className="space-y-3">
+                        <p>Det gick inte att ladda länderna: {error}</p>
+                        <Button
+                            onClick={handleRetry}
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                        >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Försök igen
+                        </Button>
+                    </AlertDescription>
+                </Alert>
             </div>
         );
     }
@@ -191,14 +226,14 @@ export function CountriesList() {
             <div className="mb-8 space-y-4">
                 <div className="flex gap-2 max-w-md mx-auto">
                     <Input
-                        placeholder="Sök efter land, region eller huvudstad..."
+                        placeholder="Search for country, region or capital..."
                         value={searchQuery}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="flex-1"
                     />
                     {(searchQuery || debouncedSearch || selectedRegion) && (
                         <Button variant="outline" onClick={clearFilters}>
-                            Rensa
+                            Clear
                         </Button>
                     )}
                 </div>
@@ -210,10 +245,10 @@ export function CountriesList() {
                         onValueChange={handleRegionChange}
                     >
                         <SelectTrigger className="w-[200px]">
-                            <SelectValue placeholder="Välj region" />
+                            <SelectValue placeholder="Select region" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Alla regioner</SelectItem>
+                            <SelectItem value="all">All regions</SelectItem>
                             {regions.map((regionName) => (
                                 <SelectItem key={regionName} value={regionName}>
                                     {regionName}
@@ -226,22 +261,33 @@ export function CountriesList() {
                 {(debouncedSearch || selectedRegion) && (
                     <p className="text-center text-sm text-muted-foreground">
                         {debouncedSearch && selectedRegion
-                            ? `Visar resultat för: "${debouncedSearch}" i ${selectedRegion}`
+                            ? `Showing results for: "${debouncedSearch}" in ${selectedRegion}`
                             : debouncedSearch
-                            ? `Visar resultat för: "${debouncedSearch}"`
-                            : `Visar länder i: ${selectedRegion}`}
+                            ? `Showing results for: "${debouncedSearch}"`
+                            : `Showing countries in: ${selectedRegion}`}
                     </p>
                 )}
             </div>
 
             {/* Loading State */}
             {isLoading && (
-                <div className="flex justify-center items-center min-h-[400px]">
-                    <div className="flex items-center gap-2">
-                        <Loader2 className="h-6 w-6 animate-spin" />
-                        <span>Laddar länder...</span>
+                <>
+                    <div className="mb-6 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span className="text-muted-foreground">
+                                Laddar länder...
+                            </span>
+                        </div>
                     </div>
-                </div>
+
+                    {/* Skeleton Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
+                        {Array.from({ length: pageSize }, (_, i) => (
+                            <CountryCardSkeleton key={i} />
+                        ))}
+                    </div>
+                </>
             )}
 
             {/* Results */}
@@ -252,10 +298,10 @@ export function CountriesList() {
                             {/* Results Info */}
                             <div className="mb-6 text-center">
                                 <p className="text-sm text-muted-foreground">
-                                    Visar {data.countries.length} av{" "}
-                                    {data.total} länder
+                                    Showing {data.countries.length} of{" "}
+                                    {data.total} countries
                                     {data.totalPages > 1 &&
-                                        ` (sida ${currentPage} av ${totalPages})`}
+                                        ` (page ${currentPage} of ${totalPages})`}
                                 </p>
                             </div>
 
@@ -366,8 +412,8 @@ export function CountriesList() {
                         <div className="text-center py-12">
                             <p className="text-muted-foreground">
                                 {debouncedSearch || selectedRegion
-                                    ? "Inga länder hittades för din sökning."
-                                    : "Inga länder att visa."}
+                                    ? "No countries found for your search."
+                                    : "No countries to display."}
                             </p>
                             {(debouncedSearch || selectedRegion) && (
                                 <Button
@@ -375,7 +421,7 @@ export function CountriesList() {
                                     onClick={clearFilters}
                                     className="mt-4"
                                 >
-                                    Visa alla länder
+                                    Show all countries
                                 </Button>
                             )}
                         </div>
