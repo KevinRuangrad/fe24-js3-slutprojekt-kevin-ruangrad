@@ -118,11 +118,6 @@
     }
     body {
         @apply bg-background text-foreground;
-        /* Background image for the entire website */
-        background-image: url("../public/background.png");
-        background-size: auto;
-        background-position: center;
-        background-repeat: no-repeat;
     }
 }
 
