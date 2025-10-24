@@ -29,16 +29,20 @@ import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 export function CountriesList() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [mounted, setMounted] = useState(false);
 
-    // Get URL parameters
-    const currentPage = parseInt(searchParams.get("page") || "1");
-    const pageSize = parseInt(searchParams.get("pageSize") || "20");
-    const query = searchParams.get("query") || "";
-    const region = searchParams.get("region") || "";
+    // State for URL parameters - use defaults until mounted
+    const [urlParams, setUrlParams] = useState({
+        currentPage: 1,
+        pageSize: 20,
+        query: "",
+        region: "",
+    });
 
-    const [searchQuery, setSearchQuery] = useState(query);
-    const [selectedRegion, setSelectedRegion] = useState(region);
-    const [debouncedSearch, setDebouncedSearch] = useState(query);
+    // Component state
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedRegion, setSelectedRegion] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [data, setData] = useState<CountryResponse | null>(null);
     const [regions, setRegions] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +51,26 @@ export function CountriesList() {
     // Debounce search query
     const [debounceTimeout, setDebounceTimeout] =
         useState<NodeJS.Timeout | null>(null);
+
+    // Set mounted to true after first render
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Update URL parameters only when mounted
+    useEffect(() => {
+        if (mounted) {
+            const currentPage = parseInt(searchParams.get("page") || "1");
+            const pageSize = parseInt(searchParams.get("pageSize") || "20");
+            const query = searchParams.get("query") || "";
+            const region = searchParams.get("region") || "";
+
+            setUrlParams({ currentPage, pageSize, query, region });
+            setSearchQuery(query);
+            setDebouncedSearch(query);
+            setSelectedRegion(region);
+        }
+    }, [mounted, searchParams]);
 
     // Update URL parameters
     const updateURL = (newParams: {
@@ -128,14 +152,16 @@ export function CountriesList() {
 
     // Fetch data when URL parameters change
     useEffect(() => {
+        if (!mounted) return;
+
         const fetchData = async () => {
             setIsLoading(true);
             setError(null);
 
             try {
                 const result = await fetchCountriesWithFilters(
-                    currentPage,
-                    pageSize,
+                    urlParams.currentPage,
+                    urlParams.pageSize,
                     debouncedSearch,
                     selectedRegion
                 );
@@ -152,14 +178,22 @@ export function CountriesList() {
         };
 
         fetchData();
-    }, [currentPage, pageSize, debouncedSearch, selectedRegion]);
+    }, [
+        mounted,
+        urlParams.currentPage,
+        urlParams.pageSize,
+        debouncedSearch,
+        selectedRegion,
+    ]);
 
     // Sync component state with URL parameters
     useEffect(() => {
-        setSearchQuery(query);
-        setDebouncedSearch(query);
-        setSelectedRegion(region);
-    }, [query, region]);
+        if (mounted) {
+            setSearchQuery(urlParams.query);
+            setDebouncedSearch(urlParams.query);
+            setSelectedRegion(urlParams.region);
+        }
+    }, [mounted, urlParams.query, urlParams.region]);
 
     const handlePageChange = (page: number) => {
         updateURL({ page });
@@ -179,8 +213,8 @@ export function CountriesList() {
 
         try {
             const result = await fetchCountriesWithFilters(
-                currentPage,
-                pageSize,
+                urlParams.currentPage,
+                urlParams.pageSize,
                 debouncedSearch,
                 selectedRegion
             );
@@ -283,7 +317,7 @@ export function CountriesList() {
 
                     {/* Skeleton Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
-                        {Array.from({ length: pageSize }, (_, i) => (
+                        {Array.from({ length: urlParams.pageSize }, (_, i) => (
                             <CountryCardSkeleton key={i} />
                         ))}
                     </div>
@@ -301,7 +335,7 @@ export function CountriesList() {
                                     Showing {data.countries.length} of{" "}
                                     {data.total} countries
                                     {data.totalPages > 1 &&
-                                        ` (page ${currentPage} of ${totalPages})`}
+                                        ` (page ${urlParams.currentPage} of ${totalPages})`}
                                 </p>
                             </div>
 
@@ -323,13 +357,16 @@ export function CountriesList() {
                                             <PaginationItem>
                                                 <PaginationPrevious
                                                     onClick={() =>
-                                                        currentPage > 1 &&
+                                                        urlParams.currentPage >
+                                                            1 &&
                                                         handlePageChange(
-                                                            currentPage - 1
+                                                            urlParams.currentPage -
+                                                                1
                                                         )
                                                     }
                                                     className={
-                                                        currentPage <= 1
+                                                        urlParams.currentPage <=
+                                                        1
                                                             ? "pointer-events-none opacity-50"
                                                             : "cursor-pointer"
                                                     }
@@ -349,18 +386,21 @@ export function CountriesList() {
                                                     if (totalPages <= 5) {
                                                         pageNum = i + 1;
                                                     } else if (
-                                                        currentPage <= 3
+                                                        urlParams.currentPage <=
+                                                        3
                                                     ) {
                                                         pageNum = i + 1;
                                                     } else if (
-                                                        currentPage >=
+                                                        urlParams.currentPage >=
                                                         totalPages - 2
                                                     ) {
                                                         pageNum =
                                                             totalPages - 4 + i;
                                                     } else {
                                                         pageNum =
-                                                            currentPage - 2 + i;
+                                                            urlParams.currentPage -
+                                                            2 +
+                                                            i;
                                                     }
 
                                                     return (
@@ -374,7 +414,7 @@ export function CountriesList() {
                                                                     )
                                                                 }
                                                                 isActive={
-                                                                    currentPage ===
+                                                                    urlParams.currentPage ===
                                                                     pageNum
                                                                 }
                                                                 className="cursor-pointer"
@@ -389,14 +429,15 @@ export function CountriesList() {
                                             <PaginationItem>
                                                 <PaginationNext
                                                     onClick={() =>
-                                                        currentPage <
+                                                        urlParams.currentPage <
                                                             totalPages &&
                                                         handlePageChange(
-                                                            currentPage + 1
+                                                            urlParams.currentPage +
+                                                                1
                                                         )
                                                     }
                                                     className={
-                                                        currentPage >=
+                                                        urlParams.currentPage >=
                                                         totalPages
                                                             ? "pointer-events-none opacity-50"
                                                             : "cursor-pointer"
