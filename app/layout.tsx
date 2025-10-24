@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { Navigation } from "@/components/navigation";
+import { Analytics } from "@vercel/analytics/next";
 
 // Google Fonts (keep these if you want to use them alongside local fonts)
 const geistSans = Geist({
@@ -33,6 +34,7 @@ export default function RootLayout({
                     <Navigation />
                     {children}
                 </SessionProvider>
+                <Analytics />
             </body>
         </html>
     );
