@@ -137,3 +137,43 @@
         line-clamp: 2;
     }
 }
+
+/* Mobile responsive styles for devices around 400x850 */
+@media screen and (max-width: 480px) {
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    /* Reduce header spacing on mobile */
+    .mobile-header {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    /* Smaller fonts for mobile */
+    .mobile-title {
+        font-size: 1.5rem;
+        line-height: 2rem;
+    }
+
+    .mobile-subtitle {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    /* Compact search and filter area */
+    .mobile-search {
+        gap: 0.75rem;
+    }
+
+    /* Optimize country cards for mobile */
+    .mobile-card {
+        font-size: 0.875rem;
+    }
+
+    /* Flag image sizing for mobile */
+    .mobile-flag {
+        height: 6rem;
+    }
+}

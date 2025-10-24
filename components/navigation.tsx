@@ -8,9 +8,9 @@ export async function Navigation() {
 
     return (
         <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                    <h1 className="text-xl font-bold">
+                    <h1 className="text-lg sm:text-xl font-bold">
                         <Link
                             href="/"
                             className="hover:text-primary transition-colors"
@@ -20,11 +20,11 @@ export async function Navigation() {
                     </h1>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                     {session?.user && (
                         <Badge
                             variant="outline"
-                            className="hidden sm:inline-flex"
+                            className="hidden sm:inline-flex text-xs"
                         >
                             Welcome! {session.user.name || "User"}
                         </Badge>

@@ -27,9 +27,9 @@ import { fetchUnsplashImages, fetchWikipediaSummary } from "@/lib/api";
 import { ImageGallery } from "@/components/image-gallery";
 
 interface CountryDetailPageProps {
-    params: {
+    params: Promise<{
         code: string;
-    };
+    }>;
 }
 
 async function getCountryByCode(code: string) {
@@ -86,7 +86,8 @@ async function getWeatherByCapital(
 export default async function CountryDetailPage({
     params,
 }: CountryDetailPageProps) {
-    const country = await getCountryByCode(params.code);
+    const { code } = await params;
+    const country = await getCountryByCode(code);
 
     if (!country) {
         notFound();

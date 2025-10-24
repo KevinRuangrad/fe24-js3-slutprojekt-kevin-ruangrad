@@ -39,6 +39,20 @@ export function CountriesList() {
         region: "",
     });
 
+    // Mobile detection for smaller page sizes
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 480);
+        };
+
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
+
     // Component state
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedRegion, setSelectedRegion] = useState("");
@@ -61,7 +75,10 @@ export function CountriesList() {
     useEffect(() => {
         if (mounted) {
             const currentPage = parseInt(searchParams.get("page") || "1");
-            const pageSize = parseInt(searchParams.get("pageSize") || "20");
+            const defaultPageSize = isMobile ? 12 : 20; // Smaller page size on mobile
+            const pageSize = parseInt(
+                searchParams.get("pageSize") || defaultPageSize.toString()
+            );
             const query = searchParams.get("query") || "";
             const region = searchParams.get("region") || "";
 
@@ -70,7 +87,7 @@ export function CountriesList() {
             setDebouncedSearch(query);
             setSelectedRegion(region);
         }
-    }, [mounted, searchParams]);
+    }, [mounted, searchParams, isMobile]);
 
     // Update URL parameters
     const updateURL = (newParams: {
@@ -90,7 +107,8 @@ export function CountriesList() {
         }
 
         if (newParams.pageSize !== undefined) {
-            if (newParams.pageSize === 20) {
+            const defaultPageSize = isMobile ? 12 : 20;
+            if (newParams.pageSize === defaultPageSize) {
                 params.delete("pageSize");
             } else {
                 params.set("pageSize", newParams.pageSize.toString());
@@ -257,8 +275,8 @@ export function CountriesList() {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Search Section */}
-            <div className="mb-8 space-y-4">
-                <div className="flex gap-2 max-w-md mx-auto">
+            <div className="mb-8 space-y-4 mobile-search">
+                <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
                     <Input
                         placeholder="Search for country, region or capital..."
                         value={searchQuery}
@@ -266,7 +284,11 @@ export function CountriesList() {
                         className="flex-1"
                     />
                     {(searchQuery || debouncedSearch || selectedRegion) && (
-                        <Button variant="outline" onClick={clearFilters}>
+                        <Button
+                            variant="outline"
+                            onClick={clearFilters}
+                            className="w-full sm:w-auto"
+                        >
                             Clear
                         </Button>
                     )}
@@ -278,7 +300,7 @@ export function CountriesList() {
                         value={selectedRegion || "all"}
                         onValueChange={handleRegionChange}
                     >
-                        <SelectTrigger className="w-[200px]">
+                        <SelectTrigger className="w-full max-w-[200px]">
                             <SelectValue placeholder="Select region" />
                         </SelectTrigger>
                         <SelectContent>
@@ -293,7 +315,7 @@ export function CountriesList() {
                 </div>
 
                 {(debouncedSearch || selectedRegion) && (
-                    <p className="text-center text-sm text-muted-foreground">
+                    <p className="text-center text-sm text-muted-foreground px-2">
                         {debouncedSearch && selectedRegion
                             ? `Showing results for: "${debouncedSearch}" in ${selectedRegion}`
                             : debouncedSearch
@@ -316,7 +338,7 @@ export function CountriesList() {
                     </div>
 
                     {/* Skeleton Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
                         {Array.from({ length: urlParams.pageSize }, (_, i) => (
                             <CountryCardSkeleton key={i} />
                         ))}
@@ -340,7 +362,7 @@ export function CountriesList() {
                             </div>
 
                             {/* Countries Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
                                 {data.countries.map((country) => (
                                     <CountryCard
                                         key={country.cca3}
