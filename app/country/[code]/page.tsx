@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SaveCountryButton } from "@/components/save-country-button";
 import {
     ArrowLeft,
     ExternalLink,
@@ -123,12 +124,15 @@ export default async function CountryDetailPage({
         <div className="min-h-screen bg-background">
             <header className="bg-background border-b">
                 <div className="container mx-auto px-4 py-6 mobile-header tablet-header">
-                    <Link href="/">
-                        <Button variant="outline" size="sm" className="mb-4">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Countries
-                        </Button>
-                    </Link>
+                    <div className="flex items-center justify-between mb-4">
+                        <Link href="/">
+                            <Button variant="outline" size="sm">
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                Back to Countries
+                            </Button>
+                        </Link>
+                        <SaveCountryButton country={country} />
+                    </div>
                     <h1 className="text-4xl md:text-6xl font-bold text-center text-foreground mobile-title tablet-title">
                         {country.name.common}
                     </h1>

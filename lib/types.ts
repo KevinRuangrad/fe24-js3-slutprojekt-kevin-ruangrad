@@ -1,3 +1,5 @@
+import { DefaultSession } from "next-auth";
+
 export interface Country {
     name: {
         common: string;
@@ -78,4 +80,19 @@ export interface WikipediaSummary {
             page: string;
         };
     };
+}
+
+// Extend NextAuth types
+declare module "next-auth" {
+    interface Session {
+        user: {
+            id: string;
+            savedCountries: string[];
+        } & DefaultSession["user"];
+    }
+
+    interface JWT {
+        id: string;
+        savedCountries: string[];
+    }
 }
