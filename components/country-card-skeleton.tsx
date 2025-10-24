@@ -5,7 +5,7 @@ export function CountryCardSkeleton() {
     return (
         <Card className="h-full hover:shadow-lg transition-shadow duration-200">
             <CardHeader className="pb-3 p-4 sm:p-6">
-                <div className="relative w-full h-24 sm:h-32 mb-3 rounded-md overflow-hidden">
+                <div className="relative w-full h-24 sm:h-32 mb-3 rounded-md overflow-hidden mobile-flag tablet-flag">
                     <Skeleton className="w-full h-full" />
                 </div>
                 <Skeleton className="h-5 sm:h-6 w-3/4 mx-auto" />

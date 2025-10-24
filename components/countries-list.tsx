@@ -41,19 +41,20 @@ export function CountriesList() {
 
     // Mobile detection for smaller page sizes
     const [isMobile, setIsMobile] = useState(false);
+    const [isTablet, setIsTablet] = useState(false);
 
     useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 480);
+        const checkScreenSize = () => {
+            const width = window.innerWidth;
+            setIsMobile(width <= 480);
+            setIsTablet(width > 480 && width <= 1024);
         };
 
-        checkMobile();
-        window.addEventListener("resize", checkMobile);
+        checkScreenSize();
+        window.addEventListener("resize", checkScreenSize);
 
-        return () => window.removeEventListener("resize", checkMobile);
-    }, []);
-
-    // Component state
+        return () => window.removeEventListener("resize", checkScreenSize);
+    }, []); // Component state
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedRegion, setSelectedRegion] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -75,7 +76,7 @@ export function CountriesList() {
     useEffect(() => {
         if (mounted) {
             const currentPage = parseInt(searchParams.get("page") || "1");
-            const defaultPageSize = isMobile ? 12 : 20; // Smaller page size on mobile
+            const defaultPageSize = isMobile ? 12 : isTablet ? 15 : 20; // Different page sizes for different devices
             const pageSize = parseInt(
                 searchParams.get("pageSize") || defaultPageSize.toString()
             );
@@ -87,7 +88,7 @@ export function CountriesList() {
             setDebouncedSearch(query);
             setSelectedRegion(region);
         }
-    }, [mounted, searchParams, isMobile]);
+    }, [mounted, searchParams, isMobile, isTablet]);
 
     // Update URL parameters
     const updateURL = (newParams: {
@@ -107,7 +108,7 @@ export function CountriesList() {
         }
 
         if (newParams.pageSize !== undefined) {
-            const defaultPageSize = isMobile ? 12 : 20;
+            const defaultPageSize = isMobile ? 12 : isTablet ? 15 : 20;
             if (newParams.pageSize === defaultPageSize) {
                 params.delete("pageSize");
             } else {
@@ -275,7 +276,7 @@ export function CountriesList() {
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Search Section */}
-            <div className="mb-8 space-y-4 mobile-search">
+            <div className="mb-8 space-y-4 mobile-search tablet-search">
                 <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
                     <Input
                         placeholder="Search for country, region or capital..."
@@ -338,7 +339,7 @@ export function CountriesList() {
                     </div>
 
                     {/* Skeleton Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 mb-8 tablet-grid">
                         {Array.from({ length: urlParams.pageSize }, (_, i) => (
                             <CountryCardSkeleton key={i} />
                         ))}
@@ -362,7 +363,7 @@ export function CountriesList() {
                             </div>
 
                             {/* Countries Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 mb-8 tablet-grid">
                                 {data.countries.map((country) => (
                                     <CountryCard
                                         key={country.cca3}

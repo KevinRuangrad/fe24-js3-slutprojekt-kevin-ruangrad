@@ -122,23 +122,23 @@ export default async function CountryDetailPage({
     return (
         <div className="min-h-screen bg-background">
             <header className="bg-background border-b">
-                <div className="container mx-auto px-4 py-6">
+                <div className="container mx-auto px-4 py-6 mobile-header tablet-header">
                     <Link href="/">
                         <Button variant="outline" size="sm" className="mb-4">
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Back to Countries
                         </Button>
                     </Link>
-                    <h1 className="text-4xl md:text-6xl font-bold text-center text-foreground">
+                    <h1 className="text-4xl md:text-6xl font-bold text-center text-foreground mobile-title tablet-title">
                         {country.name.common}
                     </h1>
-                    <p className="text-center text-muted-foreground mt-2 text-lg">
+                    <p className="text-center text-muted-foreground mt-2 text-lg mobile-subtitle tablet-subtitle">
                         {country.name.official}
                     </p>
                 </div>
             </header>
             <main className="container mx-auto px-4 py-8">
-                <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto tablet-detail-grid">
                     {/* Flag Card */}
                     <Card>
                         <CardHeader>

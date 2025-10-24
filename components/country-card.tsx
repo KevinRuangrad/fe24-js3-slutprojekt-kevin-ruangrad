@@ -13,9 +13,9 @@ export function CountryCard({ country }: CountryCardProps) {
 
     return (
         <Link href={`/country/${country.cca3}`} className="block h-full">
-            <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer mobile-card">
+            <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer mobile-card tablet-card">
                 <CardHeader className="pb-3 p-4 sm:p-6">
-                    <div className="relative w-full h-24 sm:h-32 mb-3 rounded-md overflow-hidden mobile-flag">
+                    <div className="relative w-full h-24 sm:h-32 mb-3 rounded-md overflow-hidden mobile-flag tablet-flag">
                         <Image
                             src={country.flags.svg}
                             alt={
