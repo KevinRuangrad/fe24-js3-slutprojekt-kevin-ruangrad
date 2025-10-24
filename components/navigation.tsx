@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { UserAvatar } from "@/components/user-avatar";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
 export async function Navigation() {
@@ -19,7 +20,17 @@ export async function Navigation() {
                     </h1>
                 </div>
 
-                <UserAvatar session={session} />
+                <div className="flex items-center space-x-3">
+                    {session?.user && (
+                        <Badge
+                            variant="outline"
+                            className="hidden sm:inline-flex"
+                        >
+                            Welcome! {session.user.name || "User"}
+                        </Badge>
+                    )}
+                    <UserAvatar session={session} />
+                </div>
             </div>
         </nav>
     );
