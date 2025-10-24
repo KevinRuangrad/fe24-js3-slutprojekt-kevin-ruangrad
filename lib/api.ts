@@ -1,4 +1,9 @@
-import { Country, CountryResponse } from "./types";
+import {
+    Country,
+    CountryResponse,
+    UnsplashImage,
+    WikipediaSummary,
+} from "./types";
 
 const BASE_URL = "https://restcountries.com/v3.1";
 
@@ -113,4 +118,71 @@ export async function searchCountries(
     page: number = 1
 ): Promise<CountryResponse> {
     return fetchCountriesWithFilters(page, 10, query, "");
+}
+
+// Unsplash API functions
+export async function fetchUnsplashImages(
+    query: string,
+    count: number = 6
+): Promise<UnsplashImage[]> {
+    try {
+        const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+
+        if (!accessKey) {
+            console.error("UNSPLASH_ACCESS_KEY is not configured");
+            return [];
+        }
+
+        const response = await fetch(
+            `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
+                query
+            )}&per_page=${count}&orientation=landscape`,
+            {
+                headers: {
+                    Authorization: `Client-ID ${accessKey}`,
+                },
+                next: { revalidate: 3600 }, // Cache for 1 hour
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch images from Unsplash");
+        }
+
+        const data = await response.json();
+        return data.results;
+    } catch (error) {
+        console.error("Error fetching Unsplash images:", error);
+        return [];
+    }
+}
+
+// Wikipedia API functions
+export async function fetchWikipediaSummary(
+    countryName: string
+): Promise<WikipediaSummary | null> {
+    try {
+        const response = await fetch(
+            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+                countryName
+            )}`,
+            {
+                next: { revalidate: 86400 }, // Cache for 24 hours
+            }
+        );
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const data = await response.json();
+        return {
+            title: data.title,
+            extract: data.extract,
+            content_urls: data.content_urls,
+        };
+    } catch (error) {
+        console.error("Error fetching Wikipedia summary:", error);
+        return null;
+    }
 }

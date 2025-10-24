@@ -20,3 +20,62 @@ export interface CountryResponse {
     limit: number;
     totalPages: number;
 }
+
+export interface WeatherData {
+    name: string;
+    main: {
+        temp: number;
+        feels_like: number;
+        temp_min: number;
+        temp_max: number;
+        pressure: number;
+        humidity: number;
+    };
+    weather: Array<{
+        id: number;
+        main: string;
+        description: string;
+        icon: string;
+    }>;
+    wind: {
+        speed: number;
+        deg: number;
+    };
+    visibility: number;
+    sys: {
+        country: string;
+        sunrise: number;
+        sunset: number;
+    };
+}
+
+export interface UnsplashImage {
+    id: string;
+    urls: {
+        small: string;
+        regular: string;
+        full: string;
+    };
+    alt_description: string | null;
+    description: string | null;
+    user: {
+        name: string;
+        username: string;
+        links: {
+            html: string;
+        };
+    };
+    links: {
+        html: string;
+    };
+}
+
+export interface WikipediaSummary {
+    title: string;
+    extract: string;
+    content_urls: {
+        desktop: {
+            page: string;
+        };
+    };
+}
