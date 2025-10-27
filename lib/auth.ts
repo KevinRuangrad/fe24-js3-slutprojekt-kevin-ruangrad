@@ -30,11 +30,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.id = user.id;
                 token.email = user.email;
 
-                // Load saved countries from localStorage based on email
-                if (typeof window !== "undefined") {
-                    const savedKey = `savedCountries_${user.email}`;
-                    const saved = localStorage.getItem(savedKey);
-                    token.savedCountries = saved ? JSON.parse(saved) : [];
+                // Initialize savedCountries if not present
+                if (!token.savedCountries) {
+                    token.savedCountries = [];
                 }
             }
 
@@ -45,15 +43,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.email
             ) {
                 token.savedCountries = session.savedCountries;
-
-                // Save to localStorage with email-based key
-                if (typeof window !== "undefined") {
-                    const savedKey = `savedCountries_${token.email}`;
-                    localStorage.setItem(
-                        savedKey,
-                        JSON.stringify(session.savedCountries)
-                    );
-                }
             }
 
             return token;
