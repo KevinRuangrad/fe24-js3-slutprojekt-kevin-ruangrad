@@ -22,7 +22,6 @@ function CountriesListFallback() {
     );
 }
 
-// Force dynamic rendering to avoid SSR issues with searchParams
 export const dynamic = "force-dynamic";
 
 export default function Home() {
