@@ -37,8 +37,6 @@ export function CountriesListCached() {
     const initialPage = parseInt(searchParams.get("page") || "1");
     const initialQuery = searchParams.get("q") || "";
     const initialRegion = searchParams.get("region") || "";
-
-    const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [selectedRegion, setSelectedRegion] = useState(initialRegion);
     const [currentPage, setCurrentPage] = useState(initialPage);
