@@ -31,10 +31,10 @@ export function SavedCountriesProvider({
     const [savedCountries, setSavedCountries] = useState<Country[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Sync saved countries with JWT token for session persistence
     const updateSessionToken = useCallback(async () => {
         if (session?.user?.email) {
             try {
-                // Update the JWT token with new saved countries
                 await fetch("/api/auth/session", {
                     method: "POST",
                     headers: {
@@ -50,7 +50,7 @@ export function SavedCountriesProvider({
         }
     }, [session?.user?.email, savedCountries]);
 
-    // Load saved countries from localStorage based on user email
+    // Load user-specific saved countries from localStorage on session change
     useEffect(() => {
         const loadSavedCountries = async () => {
             if (session?.user?.email) {
@@ -76,13 +76,12 @@ export function SavedCountriesProvider({
         loadSavedCountries();
     }, [session?.user?.email]);
 
-    // Save to localStorage whenever savedCountries changes
+    // Persist changes to localStorage and sync with session
     useEffect(() => {
         if (session?.user?.email && !isLoading) {
             const savedKey = `savedCountries_${session.user.email}`;
             localStorage.setItem(savedKey, JSON.stringify(savedCountries));
 
-            // Also update the session token
             updateSessionToken();
         }
     }, [savedCountries, session?.user?.email, isLoading, updateSessionToken]);

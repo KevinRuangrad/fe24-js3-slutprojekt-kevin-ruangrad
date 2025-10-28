@@ -5,7 +5,6 @@ import { Providers } from "@/components/providers";
 import { Navigation } from "@/components/navigation";
 import { Analytics } from "@vercel/analytics/next";
 
-// Google Fonts (keep these if you want to use them alongside local fonts)
 const geistSans = Geist({
     variable: "--font-geist-sans",
     subsets: ["latin"],

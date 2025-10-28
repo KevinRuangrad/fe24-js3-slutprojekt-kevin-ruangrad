@@ -138,20 +138,17 @@
     }
 }
 
-/* Mobile responsive styles for devices around 400x850 */
 @media screen and (max-width: 480px) {
     .container {
         padding-left: 0.75rem;
         padding-right: 0.75rem;
     }
 
-    /* Reduce header spacing on mobile */
     .mobile-header {
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
 
-    /* Smaller fonts for mobile */
     .mobile-title {
         font-size: 1.5rem;
         line-height: 2rem;
@@ -162,36 +159,30 @@
         line-height: 1.5rem;
     }
 
-    /* Compact search and filter area */
     .mobile-search {
         gap: 0.75rem;
     }
 
-    /* Optimize country cards for mobile */
     .mobile-card {
         font-size: 0.875rem;
     }
 
-    /* Flag image sizing for mobile */
     .mobile-flag {
         height: 6rem;
     }
 }
 
-/* Tablet responsive styles for devices between 481px and 1024px */
 @media screen and (min-width: 481px) and (max-width: 1024px) {
     .container {
         padding-left: 1rem;
         padding-right: 1rem;
     }
 
-    /* Tablet header spacing */
     .tablet-header {
         padding-top: 1.25rem;
         padding-bottom: 1.25rem;
     }
 
-    /* Tablet fonts */
     .tablet-title {
         font-size: 2.5rem;
         line-height: 3rem;
@@ -202,41 +193,34 @@
         line-height: 1.75rem;
     }
 
-    /* Tablet search and filter area */
     .tablet-search {
         gap: 1rem;
     }
 
-    /* Tablet country cards */
     .tablet-card {
         font-size: 0.9rem;
     }
 
-    /* Flag image sizing for tablet */
     .tablet-flag {
         height: 7rem;
     }
 
-    /* Tablet grid optimization - show 2-3 columns */
     .tablet-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.25rem;
     }
 
-    /* For larger tablets, show 3 columns */
     @media screen and (min-width: 768px) and (max-width: 1024px) {
         .tablet-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
 
-    /* Tablet country detail page optimizations */
     .tablet-detail-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
 
-    /* For larger tablets in landscape mode */
     @media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
         .tablet-detail-grid {
             grid-template-columns: repeat(2, 1fr);

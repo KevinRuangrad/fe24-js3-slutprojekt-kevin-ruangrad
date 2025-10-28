@@ -106,17 +106,15 @@ export default async function CountryDetailPage({
               .join(", ")
         : "N/A";
 
-    // Fetch weather data for the capital
+    // Parallel API calls for optimal loading performance
     const weatherData =
         capital !== "N/A" ? await getWeatherByCapital(capital) : null;
 
-    // Fetch images from Unsplash
     const unsplashImages: UnsplashImage[] = await fetchUnsplashImages(
         `${country.name.common} landscape`,
         6
     );
 
-    // Fetch Wikipedia summary
     const wikipediaSummary: WikipediaSummary | null =
         await fetchWikipediaSummary(country.name.common);
 
@@ -143,7 +141,6 @@ export default async function CountryDetailPage({
             </header>
             <main className="container mx-auto px-4 py-8">
                 <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto tablet-detail-grid">
-                    {/* Flag Card */}
                     <Card>
                         <CardHeader>
                             <h2 className="text-2xl font-semibold flex items-center gap-2">
@@ -167,7 +164,6 @@ export default async function CountryDetailPage({
                         </CardContent>
                     </Card>
 
-                    {/* Basic Information Card */}
                     <Card>
                         <CardHeader>
                             <h2 className="text-2xl font-semibold flex items-center gap-2">
@@ -226,7 +222,6 @@ export default async function CountryDetailPage({
                         </CardContent>
                     </Card>
 
-                    {/* Languages and Currencies Card */}
                     <Card>
                         <CardHeader>
                             <h2 className="text-2xl font-semibold flex items-center gap-2">
@@ -258,7 +253,6 @@ export default async function CountryDetailPage({
                         </CardContent>
                     </Card>
 
-                    {/* Weather Information Card */}
                     <Card>
                         <CardHeader>
                             <h2 className="text-2xl font-semibold flex items-center gap-2">
@@ -269,7 +263,6 @@ export default async function CountryDetailPage({
                         <CardContent>
                             {weatherData ? (
                                 <div className="space-y-4">
-                                    {/* Current Weather */}
                                     <div className="flex items-center space-x-3 justify-center">
                                         <Image
                                             src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png`}
@@ -296,7 +289,6 @@ export default async function CountryDetailPage({
                                         </div>
                                     </div>
 
-                                    {/* Weather Details */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-muted-foreground flex items-center gap-2">
@@ -354,7 +346,6 @@ export default async function CountryDetailPage({
                     </Card>
                 </div>
 
-                {/* Wikipedia Summary */}
                 {wikipediaSummary && (
                     <Card className="mt-8 max-w-6xl mx-auto">
                         <CardHeader>
@@ -382,7 +373,6 @@ export default async function CountryDetailPage({
                     </Card>
                 )}
 
-                {/* Image Gallery */}
                 {unsplashImages.length > 0 && (
                     <Card className="mt-8 max-w-6xl mx-auto">
                         <CardHeader>

@@ -4,9 +4,9 @@ const nextConfig: NextConfig = {
     images: {
         domains: ["openweathermap.org", "images.unsplash.com"],
     },
-     // Disable source maps in production to avoid the error
+    // Optimize production builds
     productionBrowserSourceMaps: false,
-    // Ensure proper environment variable handling
+    // Runtime environment configuration
     env: {
         NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     },

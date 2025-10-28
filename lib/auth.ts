@@ -22,7 +22,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     callbacks: {
         authorized: async ({ auth }) => {
-            // Logged in users are authenticated, otherwise redirect to login page
             return !!auth;
         },
         jwt: async ({ token, user, trigger, session }) => {
@@ -30,13 +29,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.id = user.id;
                 token.email = user.email;
 
-                // Initialize savedCountries if not present
                 if (!token.savedCountries) {
                     token.savedCountries = [];
                 }
             }
 
-            // Handle updates to saved countries from client
             if (
                 trigger === "update" &&
                 session?.savedCountries &&

@@ -10,7 +10,6 @@ interface ImageGalleryProps {
 }
 
 export function ImageGallery({ images, countryName }: ImageGalleryProps) {
-    // Show only the first 6 images
     const displayImages = images.slice(0, 6);
 
     return (

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { DefaultSession } from "next-auth";
 
-// Zod schemas
 export const CountrySchema = z.object({
     name: z.object({
         common: z.string(),

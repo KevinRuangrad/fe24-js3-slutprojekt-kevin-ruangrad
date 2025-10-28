@@ -34,17 +34,15 @@ export function CountriesListCached() {
     const searchParams = useSearchParams();
     const prefetchCountry = usePrefetchCountry();
 
-    // URL parameters
     const initialPage = parseInt(searchParams.get("page") || "1");
     const initialQuery = searchParams.get("q") || "";
     const initialRegion = searchParams.get("region") || "";
 
-    // Local state
+    const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [selectedRegion, setSelectedRegion] = useState(initialRegion);
     const [currentPage, setCurrentPage] = useState(initialPage);
 
-    // React Query hooks
     const {
         data: countriesData,
         isLoading: isLoadingCountries,
@@ -59,7 +57,6 @@ export function CountriesListCached() {
         error: regionsError,
     } = useRegions();
 
-    // Update URL when filters change
     useEffect(() => {
         const params = new URLSearchParams();
         if (currentPage > 1) params.set("page", currentPage.toString());
@@ -70,19 +67,17 @@ export function CountriesListCached() {
         router.push(newUrl, { scroll: false });
     }, [currentPage, searchQuery, selectedRegion, router]);
 
-    // Handlers
     const handleSearch = () => {
-        setCurrentPage(1); // Reset to first page on new search
+        setCurrentPage(1);
     };
 
     const handleRegionChange = (value: string) => {
         setSelectedRegion(value === "all" ? "" : value);
-        setCurrentPage(1); // Reset to first page on filter change
+        setCurrentPage(1);
     };
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        // Scroll to top when page changes
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
@@ -90,12 +85,10 @@ export function CountriesListCached() {
         refetchCountries();
     };
 
-    // Prefetch country details on hover
     const handleCountryHover = (countryCode: string) => {
         prefetchCountry(countryCode);
     };
 
-    // Error state
     if (countriesError || regionsError) {
         return (
             <div className="container mx-auto p-4">
@@ -118,7 +111,6 @@ export function CountriesListCached() {
 
     return (
         <div className="container mx-auto p-4 space-y-6">
-            {/* Search and Filter Controls */}
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                     <Input
@@ -168,7 +160,6 @@ export function CountriesListCached() {
                 </Button>
             </div>
 
-            {/* Results Summary */}
             {countriesData && (
                 <div className="text-sm text-muted-foreground">
                     Showing {countriesData.countries.length} of{" "}
@@ -184,7 +175,6 @@ export function CountriesListCached() {
                 </div>
             )}
 
-            {/* Countries Grid */}
             {isLoadingCountries ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {Array.from({ length: 6 }).map((_, index) => (
@@ -223,7 +213,6 @@ export function CountriesListCached() {
                 </div>
             )}
 
-            {/* Pagination */}
             {countriesData && countriesData.totalPages > 1 && (
                 <div className="flex justify-center">
                     <Pagination>
@@ -239,7 +228,6 @@ export function CountriesListCached() {
                                 </PaginationItem>
                             )}
 
-                            {/* Page numbers */}
                             {Array.from({
                                 length: Math.min(5, countriesData.totalPages),
                             }).map((_, index) => {

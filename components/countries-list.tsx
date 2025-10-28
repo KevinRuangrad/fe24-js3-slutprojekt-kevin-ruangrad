@@ -31,7 +31,6 @@ export function CountriesList() {
     const searchParams = useSearchParams();
     const [mounted, setMounted] = useState(false);
 
-    // State for URL parameters - use defaults until mounted
     const [urlParams, setUrlParams] = useState({
         currentPage: 1,
         pageSize: 20,
@@ -39,7 +38,6 @@ export function CountriesList() {
         region: "",
     });
 
-    // Mobile detection for smaller page sizes
     const [isMobile, setIsMobile] = useState(false);
     const [isTablet, setIsTablet] = useState(false);
 
@@ -54,7 +52,7 @@ export function CountriesList() {
         window.addEventListener("resize", checkScreenSize);
 
         return () => window.removeEventListener("resize", checkScreenSize);
-    }, []); // Component state
+    }, []);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedRegion, setSelectedRegion] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -63,20 +61,17 @@ export function CountriesList() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Debounce search query
     const [debounceTimeout, setDebounceTimeout] =
         useState<NodeJS.Timeout | null>(null);
 
-    // Set mounted to true after first render
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // Update URL parameters only when mounted
     useEffect(() => {
         if (mounted) {
             const currentPage = parseInt(searchParams.get("page") || "1");
-            const defaultPageSize = isMobile ? 12 : isTablet ? 15 : 20; // Different page sizes for different devices
+            const defaultPageSize = isMobile ? 12 : isTablet ? 15 : 20;
             const pageSize = parseInt(
                 searchParams.get("pageSize") || defaultPageSize.toString()
             );
@@ -90,7 +85,7 @@ export function CountriesList() {
         }
     }, [mounted, searchParams, isMobile, isTablet]);
 
-    // Update URL parameters
+    // Complex URL state synchronization with clean URLs
     const updateURL = (newParams: {
         page?: number;
         pageSize?: number;
@@ -136,6 +131,7 @@ export function CountriesList() {
         router.push(newURL);
     };
 
+    // Debounced search to prevent excessive API calls
     const handleSearchChange = (value: string) => {
         setSearchQuery(value);
 
@@ -156,7 +152,6 @@ export function CountriesList() {
         updateURL({ region: value, page: 1 });
     };
 
-    // Load regions on component mount
     useEffect(() => {
         const loadRegions = async () => {
             try {
@@ -169,7 +164,6 @@ export function CountriesList() {
         loadRegions();
     }, []);
 
-    // Fetch data when URL parameters change
     useEffect(() => {
         if (!mounted) return;
 
@@ -205,7 +199,6 @@ export function CountriesList() {
         selectedRegion,
     ]);
 
-    // Sync component state with URL parameters
     useEffect(() => {
         if (mounted) {
             setSearchQuery(urlParams.query);
@@ -275,7 +268,6 @@ export function CountriesList() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            {/* Search Section */}
             <div className="mb-8 space-y-4 mobile-search tablet-search">
                 <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
                     <Input
@@ -295,7 +287,6 @@ export function CountriesList() {
                     )}
                 </div>
 
-                {/* Region Filter */}
                 <div className="flex justify-center">
                     <Select
                         value={selectedRegion || "all"}
@@ -329,7 +320,6 @@ export function CountriesList() {
                 )}
             </div>
 
-            {/* Loading State */}
             {isLoading && (
                 <>
                     <div className="mb-6 text-center">
@@ -341,7 +331,6 @@ export function CountriesList() {
                         </div>
                     </div>
 
-                    {/* Skeleton Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 mb-8 tablet-grid">
                         {Array.from({ length: urlParams.pageSize }, (_, i) => (
                             <CountryCardSkeleton key={i} />
@@ -350,12 +339,10 @@ export function CountriesList() {
                 </>
             )}
 
-            {/* Results */}
             {!isLoading && (
                 <>
                     {hasResults ? (
                         <>
-                            {/* Results Info */}
                             <div className="mb-6 text-center">
                                 <p className="text-sm text-muted-foreground">
                                     Showing {data.countries.length} of{" "}
@@ -365,7 +352,6 @@ export function CountriesList() {
                                 </p>
                             </div>
 
-                            {/* Countries Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6 mb-8 tablet-grid">
                                 {data.countries.map((country) => (
                                     <CountryCard
@@ -375,7 +361,6 @@ export function CountriesList() {
                                 ))}
                             </div>
 
-                            {/* Pagination */}
                             {totalPages > 1 && (
                                 <div className="flex justify-center">
                                     <Pagination>
@@ -399,7 +384,6 @@ export function CountriesList() {
                                                 />
                                             </PaginationItem>
 
-                                            {/* Page numbers */}
                                             {Array.from(
                                                 {
                                                     length: Math.min(

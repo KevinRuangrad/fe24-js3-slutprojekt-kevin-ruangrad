@@ -7,6 +7,7 @@ import {
 
 const BASE_URL = "https://restcountries.com/v3.1";
 
+// Fetch all countries with caching strategy
 export async function fetchAllCountries(): Promise<Country[]> {
     try {
         const response = await fetch(
@@ -32,6 +33,7 @@ export async function fetchAllCountries(): Promise<Country[]> {
     }
 }
 
+// Advanced filtering with pagination for large datasets
 export async function fetchCountriesWithFilters(
     page: number = 1,
     pageSize: number = 10,
@@ -43,7 +45,7 @@ export async function fetchCountriesWithFilters(
 
         let filteredCountries = allCountries;
 
-        // Filter by region if specified
+        // Apply region filter with case-insensitive matching
         if (region && region !== "all") {
             filteredCountries = filteredCountries.filter(
                 (country) =>
@@ -51,7 +53,7 @@ export async function fetchCountriesWithFilters(
             );
         }
 
-        // Filter by search query if specified
+        // Multi-field search across name, region, and capital
         if (query.trim()) {
             filteredCountries = filteredCountries.filter(
                 (country) =>
@@ -68,6 +70,7 @@ export async function fetchCountriesWithFilters(
             );
         }
 
+        // Calculate pagination bounds and return structured response
         const startIndex = (page - 1) * pageSize;
         const endIndex = startIndex + pageSize;
         const paginatedCountries = filteredCountries.slice(
@@ -89,7 +92,7 @@ export async function fetchCountriesWithFilters(
     }
 }
 
-// Get unique regions for filter dropdown
+// Extract unique regions for dropdown filtering
 export async function getUniqueRegions(): Promise<string[]> {
     try {
         const allCountries = await fetchAllCountries();
@@ -103,7 +106,6 @@ export async function getUniqueRegions(): Promise<string[]> {
     }
 }
 
-// Legacy functions for backward compatibility
 export async function fetchCountriesPaginated(
     page: number = 1
 ): Promise<CountryResponse> {
@@ -117,7 +119,7 @@ export async function searchCountries(
     return fetchCountriesWithFilters(page, 10, query, "");
 }
 
-// Unsplash API functions
+// Unsplash API integration with error handling and fallbacks
 export async function fetchUnsplashImages(
     query: string,
     count: number = 6
@@ -154,7 +156,7 @@ export async function fetchUnsplashImages(
     }
 }
 
-// Wikipedia API functions
+// Wikipedia API integration for country information
 export async function fetchWikipediaSummary(
     countryName: string
 ): Promise<WikipediaSummary | null> {

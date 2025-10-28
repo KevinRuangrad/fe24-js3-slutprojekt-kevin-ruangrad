@@ -13,7 +13,7 @@ import {
     fetchWikipediaSummary,
 } from "../api";
 
-// Query keys for consistent caching
+// Centralized query keys for consistent caching across the app
 export const QUERY_KEYS = {
     allCountries: ["countries", "all"] as const,
     countriesWithFilters: (page: number, query: string, region: string) =>
@@ -25,7 +25,7 @@ export const QUERY_KEYS = {
         ["wikipedia", countryName] as const,
 } as const;
 
-// Hook for fetching all countries
+// Hook with aggressive caching for base country data
 export function useAllCountries() {
     return useQuery({
         queryKey: QUERY_KEYS.allCountries,
@@ -35,7 +35,7 @@ export function useAllCountries() {
     });
 }
 
-// Hook for fetching countries with filters and pagination
+// Advanced filtering hook with optimistic updates and background refetching
 export function useCountriesWithFilters(
     page: number = 1,
     pageSize: number = 10,
@@ -45,14 +45,14 @@ export function useCountriesWithFilters(
     return useQuery({
         queryKey: QUERY_KEYS.countriesWithFilters(page, query, region),
         queryFn: () => fetchCountriesWithFilters(page, pageSize, query, region),
-        staleTime: 10 * 60 * 1000, // 10 minutes
-        gcTime: 30 * 60 * 1000, // 30 minutes
-        // Keep previous data while fetching new
+        staleTime: 10 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
+        // Keep previous data while fetching new to prevent UI flicker
         placeholderData: (previousData) => previousData,
     });
 }
 
-// Hook for infinite scroll/pagination
+// Infinite scroll implementation for large datasets
 export function useInfiniteCountries(
     pageSize: number = 10,
     query: string = "",
@@ -69,44 +69,41 @@ export function useInfiniteCountries(
             }
             return undefined;
         },
-        staleTime: 10 * 60 * 1000, // 10 minutes
-        gcTime: 30 * 60 * 1000, // 30 minutes
+        staleTime: 10 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
     });
 }
 
-// Hook for fetching unique regions
 export function useRegions() {
     return useQuery({
         queryKey: QUERY_KEYS.regions,
         queryFn: getUniqueRegions,
-        staleTime: 24 * 60 * 60 * 1000, // 24 hours
-        gcTime: 24 * 60 * 60 * 1000, // 24 hours
+        staleTime: 24 * 60 * 60 * 1000,
+        gcTime: 24 * 60 * 60 * 1000,
     });
 }
 
-// Hook for fetching Unsplash images
 export function useUnsplashImages(query: string, count: number = 6) {
     return useQuery({
         queryKey: QUERY_KEYS.unsplashImages(query, count),
         queryFn: () => fetchUnsplashImages(query, count),
-        enabled: !!query, // Only run if query exists
-        staleTime: 60 * 60 * 1000, // 1 hour
-        gcTime: 2 * 60 * 60 * 1000, // 2 hours
+        enabled: !!query,
+        staleTime: 60 * 60 * 1000,
+        gcTime: 2 * 60 * 60 * 1000,
     });
 }
 
-// Hook for fetching Wikipedia summary
 export function useWikipediaSummary(countryName: string) {
     return useQuery({
         queryKey: QUERY_KEYS.wikipediaSummary(countryName),
         queryFn: () => fetchWikipediaSummary(countryName),
-        enabled: !!countryName, // Only run if countryName exists
-        staleTime: 24 * 60 * 60 * 1000, // 24 hours
-        gcTime: 24 * 60 * 60 * 1000, // 24 hours
+        enabled: !!countryName,
+        staleTime: 24 * 60 * 60 * 1000,
+        gcTime: 24 * 60 * 60 * 1000,
     });
 }
 
-// Hook for prefetching country data
+// Hook for prefetching country details on hover for better UX
 export function usePrefetchCountry() {
     const queryClient = useQueryClient();
 
