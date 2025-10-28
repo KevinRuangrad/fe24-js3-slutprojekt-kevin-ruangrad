@@ -136,7 +136,7 @@ export function CountriesListCached() {
                         onValueChange={handleRegionChange}
                         disabled={isLoadingRegions}
                     >
-                        <SelectTrigger>
+                        <SelectTrigger aria-label="Select region filter">
                             <SelectValue placeholder="Select region" />
                         </SelectTrigger>
                         <SelectContent>

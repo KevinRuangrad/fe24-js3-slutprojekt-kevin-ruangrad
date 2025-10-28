@@ -301,7 +301,10 @@ export function CountriesList() {
                         value={selectedRegion || "all"}
                         onValueChange={handleRegionChange}
                     >
-                        <SelectTrigger className="w-full max-w-[200px]">
+                        <SelectTrigger
+                            className="w-full max-w-[200px]"
+                            aria-label="Select region filter"
+                        >
                             <SelectValue placeholder="Select region" />
                         </SelectTrigger>
                         <SelectContent>

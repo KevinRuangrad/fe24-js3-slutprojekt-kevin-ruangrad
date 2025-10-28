@@ -7,55 +7,13 @@ import {
 
 const BASE_URL = "https://restcountries.com/v3.1";
 
-// Enhanced cache with TTL (Time To Live)
-interface CacheEntry<T> {
-    data: T;
-    timestamp: number;
-    ttl: number; // Time to live in milliseconds
-}
-
-class ApiCache {
-    private cache = new Map<string, CacheEntry<unknown>>();
-
-    set<T>(key: string, data: T, ttlSeconds: number = 3600): void {
-        this.cache.set(key, {
-            data,
-            timestamp: Date.now(),
-            ttl: ttlSeconds * 1000,
-        });
-    }
-
-    get<T>(key: string): T | null {
-        const entry = this.cache.get(key);
-        if (!entry) return null;
-
-        // Check if cache has expired
-        if (Date.now() - entry.timestamp > entry.ttl) {
-            this.cache.delete(key);
-            return null;
-        }
-
-        return entry.data as T;
-    }
-
-    clear(): void {
-        this.cache.clear();
-    }
-}
-
-const apiCache = new ApiCache();
-
 export async function fetchAllCountries(): Promise<Country[]> {
-    const cacheKey = "all-countries";
-    const cached = apiCache.get<Country[]>(cacheKey);
-
-    if (cached) {
-        return cached;
-    }
-
     try {
         const response = await fetch(
-            `${BASE_URL}/all?fields=name,capital,region,flags,cca3`
+            `${BASE_URL}/all?fields=name,capital,region,flags,cca3`,
+            {
+                next: { revalidate: 86400 }, // Cache for 24 hours
+            }
         );
 
         if (!response.ok) {
@@ -67,8 +25,6 @@ export async function fetchAllCountries(): Promise<Country[]> {
             a.name.common.localeCompare(b.name.common)
         );
 
-        // Cache for 24 hours (86400 seconds)
-        apiCache.set(cacheKey, sortedCountries, 86400);
         return sortedCountries;
     } catch (error) {
         console.error("Error fetching countries:", error);
@@ -166,13 +122,6 @@ export async function fetchUnsplashImages(
     query: string,
     count: number = 6
 ): Promise<UnsplashImage[]> {
-    const cacheKey = `unsplash-${query}-${count}`;
-    const cached = apiCache.get<UnsplashImage[]>(cacheKey);
-
-    if (cached) {
-        return cached;
-    }
-
     try {
         const accessKey = process.env.UNSPLASH_ACCESS_KEY;
 
@@ -198,8 +147,6 @@ export async function fetchUnsplashImages(
         }
 
         const data = await response.json();
-        // Cache for 1 hour (3600 seconds)
-        apiCache.set(cacheKey, data.results, 3600);
         return data.results;
     } catch (error) {
         console.error("Error fetching Unsplash images:", error);
@@ -211,13 +158,6 @@ export async function fetchUnsplashImages(
 export async function fetchWikipediaSummary(
     countryName: string
 ): Promise<WikipediaSummary | null> {
-    const cacheKey = `wikipedia-${countryName}`;
-    const cached = apiCache.get<WikipediaSummary | null>(cacheKey);
-
-    if (cached !== null) {
-        return cached;
-    }
-
     try {
         const response = await fetch(
             `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
@@ -229,8 +169,6 @@ export async function fetchWikipediaSummary(
         );
 
         if (!response.ok) {
-            // Cache null result for 1 hour to avoid repeated failed requests
-            apiCache.set(cacheKey, null, 3600);
             return null;
         }
 
@@ -241,13 +179,9 @@ export async function fetchWikipediaSummary(
             content_urls: data.content_urls,
         };
 
-        // Cache for 24 hours (86400 seconds)
-        apiCache.set(cacheKey, summary, 86400);
         return summary;
     } catch (error) {
         console.error("Error fetching Wikipedia summary:", error);
-        // Cache null result for 1 hour to avoid repeated failed requests
-        apiCache.set(cacheKey, null, 3600);
         return null;
     }
 }
